@@ -1,103 +1,134 @@
 
 import React, { useState } from 'react';
+import { supabase } from '../services/supabase';
 import { ICONS } from '../constants';
+import MagneticButton from '../components/MagneticButton';
+import { motion } from 'framer-motion';
 
-const Auth: React.FC<{ onLogin: (username: string) => void }> = ({ onLogin }) => {
+const Auth: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulation de l'appel API Supabase
-    if (isLogin) {
-      onLogin(username || "Gardien_Alpha");
-    } else {
-      onLogin(username);
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (isLogin) {
+        const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+        if (authError) throw authError;
+      } else {
+        const { error: authError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { username } }
+        });
+        if (authError) throw authError;
+        setError("Lien d'activation envoyé ! Vérifiez votre boîte mail.");
+      }
+    } catch (err: any) {
+      setError(err.message || "Échec de la liaison au Nexus.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
-      <div className="glass-panel w-full max-w-sm p-8 rounded-3xl border-green-500/30 relative overflow-hidden">
-        {/* Scanline effect overlay */}
-        <div className="absolute inset-0 pointer-events-none opacity-5 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]"></div>
-        
-        <div className="text-center mb-8">
-          <div className="text-4xl text-green-500 mb-4 inline-block neon-glow p-3 rounded-full bg-green-950/20">
+    <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden">
+      {/* Local Aurora Blobs for Auth */}
+      <div className="aurora-bg">
+        <motion.div 
+          animate={{ x: [0, 100, 0], y: [0, -50, 0] }}
+          transition={{ duration: 20, repeat: Infinity }}
+          className="aurora-blob bg-green-500/10 top-0 left-0" 
+        />
+        <motion.div 
+          animate={{ x: [0, -100, 0], y: [0, 50, 0] }}
+          transition={{ duration: 15, repeat: Infinity }}
+          className="aurora-blob bg-blue-500/10 bottom-0 right-0" 
+        />
+      </div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 30, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        className="glass-panel w-full max-w-sm p-8 rounded-[40px] border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.5)] z-10"
+      >
+        <div className="text-center mb-10">
+          <motion.div 
+            animate={{ rotate: [0, 5, -5, 0], scale: [1, 1.05, 1] }}
+            transition={{ duration: 5, repeat: Infinity }}
+            className="text-5xl text-green-500 mb-6 inline-block p-4 rounded-3xl bg-green-950/20 shadow-[0_0_30px_rgba(34,197,94,0.2)] border border-green-500/20"
+          >
             {ICONS.ZONE}
-          </div>
-          <h2 className="text-xl font-bold tracking-[0.3em] uppercase text-white">
+          </motion.div>
+          <h2 className="text-2xl font-bold tracking-[0.2em] uppercase text-white neon-text">
             {isLogin ? 'Accès Terminal' : 'Initialisation'}
           </h2>
-          <p className="text-[10px] text-green-500 font-mono mt-2 uppercase tracking-widest">
-            Protocole de connexion biologique
+          <p className="text-[9px] text-green-700 font-mono mt-2 uppercase tracking-widest font-bold">
+            {loading ? 'Synchronisation Bio-Data...' : 'Nexus Link Protocol Active'}
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
+        {error && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            className={`mb-6 p-4 border rounded-2xl text-[10px] font-mono uppercase text-center ${
+              error.includes("mail") ? "bg-blue-950/20 border-blue-500/40 text-blue-400" : "bg-red-950/20 border-red-500/40 text-red-400"
+            }`}
+          >
+             {error}
+          </motion.div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-5">
           {!isLogin && (
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Nom du Gardien</label>
               <input 
-                type="text" 
-                required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="EX: ANTIGRAVITY"
-                className="w-full bg-black/50 border border-green-900/50 rounded-xl px-4 py-3 text-green-400 font-mono focus:outline-none focus:border-green-500 transition-all"
+                type="text" required value={username} onChange={(e) => setUsername(e.target.value)}
+                placeholder="ALIAS DU GARDIEN"
+                className="w-full bg-black/40 border border-white/5 rounded-2xl px-5 py-4 text-green-400 font-mono text-sm focus:outline-none focus:border-green-500/50 focus:bg-black/60 transition-all placeholder:text-slate-700"
               />
             </div>
           )}
           
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Identifiant Email</label>
-            <input 
-              type="email" 
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@territoire.live"
-              className="w-full bg-black/50 border border-green-900/50 rounded-xl px-4 py-3 text-green-400 font-mono focus:outline-none focus:border-green-500 transition-all"
-            />
-          </div>
+          <input 
+            type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+            placeholder="LIAISON EMAIL"
+            className="w-full bg-black/40 border border-white/5 rounded-2xl px-5 py-4 text-green-400 font-mono text-sm focus:outline-none focus:border-green-500/50 focus:bg-black/60 transition-all placeholder:text-slate-700"
+          />
 
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Clé d'accès</label>
-            <input 
-              type="password" 
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full bg-black/50 border border-green-900/50 rounded-xl px-4 py-3 text-green-400 font-mono focus:outline-none focus:border-green-500 transition-all"
-            />
-          </div>
+          <input 
+            type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
+            placeholder="CLÉ D'ACCÈS"
+            className="w-full bg-black/40 border border-white/5 rounded-2xl px-5 py-4 text-green-400 font-mono text-sm focus:outline-none focus:border-green-500/50 focus:bg-black/60 transition-all placeholder:text-slate-700"
+          />
 
-          <button 
-            type="submit"
-            className="w-full bg-green-500 text-black py-4 rounded-xl font-bold uppercase tracking-widest hover:bg-green-400 transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)] mt-4"
-          >
-            {isLogin ? 'Établir la liaison' : 'Créer le profil'}
-          </button>
+          <div className="flex justify-center pt-4">
+            <MagneticButton 
+              disabled={loading}
+              className="px-10 bg-green-500 text-black py-5 rounded-2xl font-bold uppercase tracking-[0.2em] shadow-[0_15px_30px_rgba(34,197,94,0.3)] hover:bg-green-400 transition-all active:scale-95 text-xs whitespace-nowrap"
+            >
+              {loading ? 'Transmission...' : (isLogin ? 'Établir la liaison' : 'Inscrire le Gardien')}
+            </MagneticButton>
+          </div>
         </form>
 
-        <div className="mt-8 text-center">
+        <div className="mt-10 text-center">
           <button 
             onClick={() => setIsLogin(!isLogin)}
-            className="text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-green-400 transition-colors"
+            className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-500 hover:text-green-400 transition-colors"
           >
-            {isLogin ? "Pas encore de profil ? S'enregistrer" : "Déjà enregistré ? Se connecter"}
+            {isLogin ? "Nouveau biosignal ? Créer un profil" : "Déjà enregistré ? Accéder au Terminal"}
           </button>
         </div>
-      </div>
-      
-      <div className="mt-8 flex gap-6 opacity-30 grayscale grayscale-100">
-         <i className="fab fa-bluetooth-b text-xl"></i>
-         <i className="fas fa-satellite text-xl"></i>
-         <i className="fas fa-microchip text-xl"></i>
-      </div>
+      </motion.div>
     </div>
   );
 };

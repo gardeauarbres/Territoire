@@ -16,12 +16,47 @@ export interface WeatherData {
 }
 
 export type ImpactType = 'carbon' | 'water' | 'biodiversity';
+export type ProofType = 'IMAGE' | 'AUDIO' | 'NONE';
+
+export interface Swarm {
+  id: string;
+  name: string;
+  description: string;
+  reputation: number;
+  avatar_url: string;
+  creator_id: string;
+  member_count: number;
+  motto: string;
+}
+
+export interface Artifact {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+  rarity: 'COMMON' | 'RARE' | 'LEGENDARY';
+  power_text: string;
+  found_date: string;
+}
+
+export interface Chronicle {
+  id: string;
+  date: string;
+  title: string;
+  content: string;
+  highlighted_swarm_name?: string;
+  threat_level: 'LOW' | 'MEDIUM' | 'CRITICAL';
+}
 
 export interface Territory {
   id: string;
   name: string;
   description: string;
   total_xp: number;
+  health_score: number;
+  stability_score: number;
+  active_nodes: number;
+  is_under_threat: boolean;
 }
 
 export interface Spot {
@@ -36,6 +71,8 @@ export interface Spot {
   owner_id?: string;
   owner_name?: string;
   spirit_personality?: string;
+  last_activity?: string;
+  connected_spot_ids: string[];
 }
 
 export interface Mission {
@@ -44,9 +81,11 @@ export interface Mission {
   title: string;
   description: string;
   xp_reward: number;
-  type: 'observation' | 'action' | 'report';
+  type: 'observation' | 'action' | 'report' | 'coop' | 'emergency';
   impact_type: ImpactType;
   impact_value: number;
+  is_priority?: boolean;
+  required_proof?: ProofType;
 }
 
 export interface CollectiveMission {
@@ -59,6 +98,8 @@ export interface CollectiveMission {
   impact_type: ImpactType;
   is_completed: boolean;
   victory_chronicle?: string;
+  type: 'STANDARD' | 'EMERGENCY';
+  expires_at?: string;
 }
 
 export interface Echo {
@@ -77,12 +118,13 @@ export interface Profile {
   xp: number;
   level: number;
   avatar_url?: string;
+  swarm_id?: string;
 }
 
 export interface ImpactStats {
-  carbon: number;      // en kg
-  water: number;       // en litres
-  biodiversity: number; // en unités de surface/qualité
+  carbon: number;
+  water: number;
+  biodiversity: number;
 }
 
 export interface Badge {
@@ -90,7 +132,7 @@ export interface Badge {
   name: string;
   description: string;
   icon: string;
-  requirement_type: 'mission_count' | 'territory_explorer' | 'level';
+  requirement_type: 'mission_count' | 'territory_explorer' | 'level' | 'coop_count';
   requirement_value: number;
 }
 
@@ -100,11 +142,32 @@ export interface MissionCompletion {
   mission_id: string;
   completed_at: string;
   xp_earned: number;
+  is_symbiosis?: boolean;
+  proof_data?: string;
 }
 
 export interface BioScanResult {
   commonName: string;
   scientificName: string;
   ecologyFact: string;
+  confidence: number;
+}
+
+export interface FeedItem {
+  type: 'SCAN' | 'MISSION';
+  activity_id: string;
+  created_at: string;
+  username: string;
+  avatar_url?: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  user_id: string;
+  resonance_count?: number;
+}
+
+export interface ProofValidationResult {
+  success: boolean;
+  feedback: string;
   confidence: number;
 }

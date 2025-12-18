@@ -1,21 +1,7 @@
 
-// Note: Ces variables devront être configurées dans l'environnement Vercel/Local
-// Pour la démo, on simule le client si les clés sont absentes, 
-// mais la structure est prête pour le mode "Production".
+import { createClient } from '@supabase/supabase-js';
 
-export const supabaseConfig = {
-  url: 'https://votre-projet.supabase.co',
-  anonKey: 'votre-cle-anonyme'
-};
+const supabaseUrl = 'https://hvvrcejnornwkimvyglz.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2dnJjZWpub3Jud2tpbXZ5Z2x6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwNDkzODIsImV4cCI6MjA4MTYyNTM4Mn0.06wbkXD678wMchdVFadAg6pgNm4cKNikBg1JbPpDWEQ';
 
-// En production réelle, on importerait { createClient } from '@supabase/supabase-js'
-// Ici, on prépare la structure de données attendue par le reste de l'app.
-export interface UserSession {
-  user: {
-    id: string;
-    email: string;
-    user_metadata: {
-      username: string;
-    };
-  } | null;
-}
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
