@@ -1,0 +1,8 @@
+{
+  "name": "TERRITOIRE VIVANT - Nature Augmentée",
+  "description": "Une application d'exploration écologique immersive connectant le numérique et la biodiversité locale. Scannez des spots, accomplissez des missions et communiquez avec l'Esprit de la Forêt.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
