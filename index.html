@@ -3,8 +3,11 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Territoire Vivant - Beta 1.0</title>
+    <meta name="description" content="Exploration écologique immersive connectant le numérique et la biodiversité locale.">
+    <meta name="theme-color" content="#020401">
+    <link rel="manifest" href="./manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -22,6 +25,10 @@
             color: #e2e8f0;
             overflow-x: hidden;
             margin: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior-y: contain;
         }
 
         /* Mesh Gradient Aurora */
@@ -53,7 +60,6 @@
             100% { transform: translate(30%, -10%) rotate(360deg) scale(1.1); }
         }
 
-        /* Frosted Glass + Real Grain Noise */
         .glass-panel {
             background: rgba(10, 15, 10, 0.4);
             backdrop-filter: blur(20px) saturate(160%);
@@ -75,7 +81,6 @@
             z-index: 1;
         }
 
-        /* Neon Plasma Tube */
         .neon-tube {
             height: 10px;
             border-radius: 20px;
@@ -94,30 +99,6 @@
             transition: width 1.5s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
-        .neon-tube-fill::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 40%;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 20px;
-            margin: 1px 4px;
-            filter: blur(1px);
-        }
-
-        .neon-tube-fill::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            animation: flow 3s infinite linear;
-        }
-
         @keyframes flow {
             0% { transform: translateX(-100%); }
             100% { transform: translateX(100%); }
@@ -127,14 +108,8 @@
             text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
         }
 
-        /* Hide Scrollbar */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        /* Cursor Glow (Optional, implemented in React) */
-        .spotlight-mask {
-            mask-image: radial-gradient(circle at var(--x) var(--y), black 0%, transparent 70%);
-        }
     </style>
 <script type="importmap">
 {
@@ -152,5 +127,22 @@
 </head>
 <body>
     <div id="root"></div>
+    <script type="module" src="./index.tsx"></script>
+    <script>
+      // Protocole de liaison résilient
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          // On utilise un chemin relatif strict pour éviter les erreurs d'origine croisée
+          // dans les environnements de preview
+          const swPath = './sw.js';
+          navigator.serviceWorker.register(swPath, { scope: './' }).then(reg => {
+            console.log('Nexus synchronisé via Service Worker.', reg.scope);
+          }).catch(err => {
+            // Échec silencieux si l'environnement bloque les SW (ex: iframes isolées)
+            console.debug('Liaison Service Worker ignorée (Environnement protégé):', err.message);
+          });
+        });
+      }
+    </script>
 </body>
 </html>
